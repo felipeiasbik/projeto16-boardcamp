@@ -2,7 +2,40 @@ import { db } from "../database/database.connection.js";
 import dayjs from "dayjs";
 
 export async function getRentals(req, res) {
+    try {
+        const rentals = await db.query(`
+        SELECT rentals.*, 
+        customers.id AS "idCustomer", 
+        customers.name AS "idCustomerName", 
+        games.id AS "idGame", 
+        games.name AS "gameName" FROM rentals 
+        JOIN customers ON "customerId" = customers.id 
+        JOIN games ON "gameId" = games.id
+        `);
 
+        const newRentals = rentals.rows.map( r => ({
+            id: r.id,
+            customerId: r.customerId,
+            gameId: r.gameId,
+            rentDate: r.rentDate,
+            daysRented: r.daysRented,
+            returnDate: r.returnDate,
+            originalPrice: r.originalPrice,
+            delayFee: r.delayFee,
+            customer: {
+                id: r.idCustomer,
+                name: r.idCustomerName,
+            },
+            game: {
+                id: r.gameId,
+                name: r.gameName,
+            },
+        }))
+
+        res.send(newRentals);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
 }
 
 export async function postRentals(req, res) {
