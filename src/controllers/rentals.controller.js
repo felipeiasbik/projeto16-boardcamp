@@ -17,7 +17,7 @@ export async function getRentals(req, res) {
             id: r.id,
             customerId: r.customerId,
             gameId: r.gameId,
-            rentDate: r.rentDate,
+            rentDate: dayjs(r.rentDate).format('YYYY-MM-DD'),
             daysRented: r.daysRented,
             returnDate: r.returnDate,
             originalPrice: r.originalPrice,
@@ -42,14 +42,14 @@ export async function postRentals(req, res) {
     const { customerId, gameId, daysRented } = req.body;
     try {
         const user = await db.query(`SELECT * FROM customers WHERE id = $1`, [customerId]);
-        if (user.rows.length === 0) return res.status(400).send("Usuário não encontrado");
+        if (user.rows.length === 0) return res.sendStatus(400);
 
         const game = await db.query(`SELECT * FROM games WHERE id = $1`, [gameId]);
-        if (game.rows.length === 0) return res.status(400).send("Não existe o jogo");
+        if (game.rows.length === 0) return res.sendStatus(400);
 
         const stock = await db.query(`SELECT games."stockTotal" FROM games WHERE id = $1`, [gameId]);
         const rentalsThisGame = await db.query(`SELECT * FROM rentals WHERE "gameId" = $1`, [gameId]);
-        if (stock.rows[0].stockTotal <= rentalsThisGame.rows.length) return res.status(400).send("Estoque indisponível");
+        if (stock.rows[0].stockTotal <= rentalsThisGame.rows.length) return res.sendStatus(400);
         
         const priceGame = await db.query(`SELECT "pricePerDay" FROM games WHERE id = $1`, [gameId]);
 
@@ -81,7 +81,24 @@ export async function postRentals(req, res) {
 }
 
 export async function postIdRentals(req, res) {
+    const { id } = req.params;
 
+    try {
+        const finalizeRent = await db.query(`SELECT * FROM rentals WHERE id = $1`, [id]);
+        if (finalizeRent.rows.length === 0 ) return res.sendStatus(404);
+        if (finalizeRent.rows.delayFee !== null) return res.sendStatus(400);
+        const dateNew = dayjs(Date.now());
+        const dateOld = dayjs(finalizeRent.rows[0].rentDate);
+        
+        const dateDif = dateNew.diff(dateOld);
+        const delayFeeTotal = (finalizeRent.rows[0].originalPrice/finalizeRent.rows[0].daysRented)*Math.floor(dateDif / 86400000);
+
+        const finalizeEditRent = await db.query(`UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = $3`, [dateNew, delayFeeTotal, id]);
+
+        res.sendStatus(200);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
 }
 
 export async function deleteRentals(req, res) {
