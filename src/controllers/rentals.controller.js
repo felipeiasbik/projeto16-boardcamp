@@ -87,7 +87,7 @@ export async function postIdRentals(req, res) {
         const finalizeRent = await db.query(`SELECT * FROM rentals WHERE id = $1`, [id]);
         if (finalizeRent.rows.length === 0 ) return res.sendStatus(404);
         if (finalizeRent.rows[0].returnDate !== null) return res.sendStatus(400);
-        
+
         const dateNew = dayjs(Date.now());
         const dateOld = dayjs(finalizeRent.rows[0].rentDate);        
         const deliveryDate = dateOld.add(finalizeRent.rows[0].daysRented, "day").format('YYYY-MM-DD');
@@ -101,7 +101,7 @@ export async function postIdRentals(req, res) {
         SET "returnDate" = $1, 
         "delayFee" = $2 
         WHERE id = $3`, 
-        [dateNew, delayFeeTotal < 0 ? delayFeeTotal : 0, id]
+        [dateNew, delayFeeTotal >= 0 ? delayFeeTotal : 0, id]
         );
 
         res.sendStatus(200);
