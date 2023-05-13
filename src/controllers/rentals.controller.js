@@ -86,13 +86,13 @@ export async function postIdRentals(req, res) {
     try {
         const finalizeRent = await db.query(`SELECT * FROM rentals WHERE id = $1`, [id]);
         if (finalizeRent.rows.length === 0 ) return res.sendStatus(404);
-        if (finalizeRent.rows[0].delayFee !== null) return res.sendStatus(400);
+        if (finalizeRent.rows[0].returnDate !== null) return res.sendStatus(400);
         const dateNew = dayjs(Date.now());
         const dateOld = dayjs(finalizeRent.rows[0].rentDate);
         
         const dateDif = dateNew.diff(dateOld);
         const delayFeeTotal = (finalizeRent.rows[0].originalPrice/finalizeRent.rows[0].daysRented)*Math.floor(dateDif / 86400000);
-
+        console.log (delayFeeTotal);
         await db.query(`UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = $3`, [dateNew, delayFeeTotal, id]);
 
         res.sendStatus(200);
@@ -102,5 +102,16 @@ export async function postIdRentals(req, res) {
 }
 
 export async function deleteRentals(req, res) {
+    const { id } = req.params;
+    try{
+        const idExists = await db.query(`SELECT * FROM rentals WHERE id = $1`, [id]);
+        if (idExists.rows.length === 0) return res.sendStatus(404);
+        if (idExists.rows[0].returnDate === null) return res.sendStatus(400);
 
+        await db.query(`DELETE FROM rentals WHERE id = $1`, [id]);
+
+        res.sendStatus(200);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
 }
