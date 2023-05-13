@@ -2,7 +2,7 @@ import { db } from "../database/database.connection.js";
 
 export async function getCustomers(req, res) {
     try {
-        const getCustomers = await db.query(`SELECT * FROM customers`);
+        const getCustomers = await db.query(`SELECT *, to_char(birthday, 'YYYY-MM-DD') AS birthday FROM customers`);
         res.send(getCustomers.rows);
     } catch (err) {
         res.status(500).send(err.message);
@@ -12,7 +12,7 @@ export async function getCustomers(req, res) {
 export async function getIdCustomer(req, res) {
     const { id } = req.params;
     try{
-        const user = await db.query(`SELECT * FROM customers WHERE id = $1`, [id]);
+        const user = await db.query(`SELECT *, to_char(birthday, 'YYYY-MM-DD') AS birthday FROM customers WHERE id = $1`, [id]);
         if(user.rows.length === 0) return res.sendStatus(404);
 
         res.send(user.rows[0]);

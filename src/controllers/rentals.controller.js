@@ -93,7 +93,7 @@ export async function postIdRentals(req, res) {
         const dateDif = dateNew.diff(dateOld);
         const delayFeeTotal = (finalizeRent.rows[0].originalPrice/finalizeRent.rows[0].daysRented)*Math.floor(dateDif / 86400000);
 
-        const finalizeEditRent = await db.query(`UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = $3`, [dateNew, delayFeeTotal, id]);
+        await db.query(`UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = $3`, [dateNew, delayFeeTotal, id]);
 
         res.sendStatus(200);
     } catch (err) {
