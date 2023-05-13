@@ -86,7 +86,7 @@ export async function postIdRentals(req, res) {
     try {
         const finalizeRent = await db.query(`SELECT * FROM rentals WHERE id = $1`, [id]);
         if (finalizeRent.rows.length === 0 ) return res.sendStatus(404);
-        if (finalizeRent.rows.delayFee !== null) return res.sendStatus(400);
+        if (finalizeRent.rows[0].delayFee !== null) return res.sendStatus(400);
         const dateNew = dayjs(Date.now());
         const dateOld = dayjs(finalizeRent.rows[0].rentDate);
         
