@@ -4,7 +4,7 @@ export async function getGames(req, res) {
     const { name } = req.query;
     try {
         const queryName = await db.query(`SELECT * FROM games WHERE LOWER(name) LIKE LOWER($1)`, [name + '%']);
-        if (name && queryName.rows.length === 0) return res.sendStatus(404);
+        // if (name && queryName.rows.length === 0) return res.sendStatus(404);
         if (name) return res.send(queryName.rows);
 
         const games = await db.query(`SELECT * FROM games`);

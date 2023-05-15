@@ -1,11 +1,19 @@
 import { db } from "../database/database.connection.js";
+import dayjs from "dayjs";
 
 export async function getCustomers(req, res) {
     const { cpf } = req.query;
     try {
         const queryCpf = await db.query(`SELECT * FROM customers WHERE cpf LIKE $1`, [cpf + '%']);
         if (cpf && queryCpf.rows.length === 0) return res.sendStatus(404);
-        if (cpf) return res.send(queryCpf.rows);
+        const newQueryCpf = queryCpf.rows.map ( r => ({
+            id: r.id,
+            name: r.name,
+            phone: r.phone,
+            cpf: r.cpf,
+            birthday: dayjs(r.birthday).format('YYYY-MM-DD')
+        }));
+        if (cpf) return res.send(newQueryCpf);
 
         const getCustomers = await db.query(`SELECT *, to_char(birthday, 'YYYY-MM-DD') AS birthday FROM customers`);
         res.send(getCustomers.rows);
