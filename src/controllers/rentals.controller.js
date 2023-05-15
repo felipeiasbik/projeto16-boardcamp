@@ -4,7 +4,18 @@ import dayjs from "dayjs";
 export async function getRentals(req, res) {
     const { customerId, gameId } = req.query;
     try {
-        const queryCustomer = await db.query(`SELECT * FROM rentals WHERE "customerId" = $1`, [customerId ]);
+        const queryCustomer = await db.query(`
+        SELECT rentals.*, 
+        customers.id AS "idCustomer", 
+        customers.name AS "idCustomerName", 
+        games.id AS "idGame", 
+        games.name AS "gameName"  
+        FROM rentals 
+        JOIN customers ON "customerId" = customers.id 
+        JOIN games ON "gameId" = games.id
+        WHERE "customerId" = $1
+        `, [customerId ]);
+
         if (customerId && queryCustomer.rows.length === 0) return res.sendStatus(404);
         const newQueryCustomer = queryCustomer.rows.map( r => ({
             id: r.id,
@@ -25,7 +36,18 @@ export async function getRentals(req, res) {
             },
         }));
         if (customerId) return res.send(newQueryCustomer);
-        const queryGame = await db.query(`SELECT * FROM rentals WHERE "gameId" = $1`, [gameId]);
+        const queryGame = await db.query(`
+        SELECT rentals.*, 
+        customers.id AS "idCustomer", 
+        customers.name AS "idCustomerName", 
+        games.id AS "idGame", 
+        games.name AS "gameName"  
+        FROM rentals 
+        JOIN customers ON "customerId" = customers.id 
+        JOIN games ON "gameId" = games.id
+        WHERE "gameId" = $1
+        `, [gameId]);
+        
         if (gameId && queryGame.rows.length === 0) return res.sendStatus(404);
         const newQueryGame = queryGame.rows.map( r => ({
             id: r.id,
@@ -52,7 +74,8 @@ export async function getRentals(req, res) {
         customers.id AS "idCustomer", 
         customers.name AS "idCustomerName", 
         games.id AS "idGame", 
-        games.name AS "gameName" FROM rentals 
+        games.name AS "gameName" 
+        FROM rentals 
         JOIN customers ON "customerId" = customers.id 
         JOIN games ON "gameId" = games.id
         `);
