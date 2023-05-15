@@ -14,8 +14,16 @@ export async function getRentals(req, res) {
             daysRented: r.daysRented,
             returnDate: (r.returnDate !== null) ? dayjs(r.returnDate).format('YYYY-MM-DD') : null,
             originalPrice: r.originalPrice,
-            delayFee: r.delayFee
-        }))
+            delayFee: r.delayFee,
+            customer: {
+                id: r.idCustomer,
+                name: r.idCustomerName,
+            },
+            game: {
+                id: r.gameId,
+                name: r.gameName,
+            },
+        }));
         if (customerId) return res.send(newQueryCustomer);
         const queryGame = await db.query(`SELECT * FROM rentals WHERE "gameId" = $1`, [gameId]);
         if (gameId && queryGame.rows.length === 0) return res.sendStatus(404);
@@ -27,8 +35,16 @@ export async function getRentals(req, res) {
             daysRented: r.daysRented,
             returnDate: (r.returnDate !== null) ? dayjs(r.returnDate).format('YYYY-MM-DD') : null,
             originalPrice: r.originalPrice,
-            delayFee: r.delayFee
-        }))
+            delayFee: r.delayFee,
+            customer: {
+                id: r.idCustomer,
+                name: r.idCustomerName,
+            },
+            game: {
+                id: r.gameId,
+                name: r.gameName,
+            },
+        }));
         if (gameId) return res.send(newQueryGame);
 
         const rentals = await db.query(`
