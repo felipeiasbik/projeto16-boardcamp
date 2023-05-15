@@ -1,7 +1,12 @@
 import { db } from "../database/database.connection.js";
 
 export async function getCustomers(req, res) {
+    const { cpf } = req.query;
     try {
+        const queryCpf = await db.query(`SELECT * FROM customers WHERE cpf LIKE $1`, [cpf + '%']);
+        if (cpf && queryCpf.rows.length === 0) return res.sendStatus(404);
+        if (cpf) return res.send(queryCpf.rows);
+
         const getCustomers = await db.query(`SELECT *, to_char(birthday, 'YYYY-MM-DD') AS birthday FROM customers`);
         res.send(getCustomers.rows);
     } catch (err) {

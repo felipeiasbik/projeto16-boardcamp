@@ -2,7 +2,15 @@ import { db } from "../database/database.connection.js";
 import dayjs from "dayjs";
 
 export async function getRentals(req, res) {
+    const { customerId, gameId } = req.query;
     try {
+        const queryCustomer = await db.query(`SELECT * FROM rentals WHERE "customerId" = $1`, [customerId ]);
+        if (customerId && queryCustomer.rows.length === 0) return res.sendStatus(404);
+        if (customerId) return res.send(queryCustomer.rows);
+        const queryGame = await db.query(`SELECT * FROM rentals WHERE "gameId" = $1`, [gameId]);
+        if (gameId && queryGame.rows.length === 0) return res.sendStatus(404);
+        if (gameId) return res.send(queryGame.rows);
+
         const rentals = await db.query(`
         SELECT rentals.*, 
         customers.id AS "idCustomer", 
