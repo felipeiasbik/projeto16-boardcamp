@@ -6,10 +6,30 @@ export async function getRentals(req, res) {
     try {
         const queryCustomer = await db.query(`SELECT * FROM rentals WHERE "customerId" = $1`, [customerId ]);
         if (customerId && queryCustomer.rows.length === 0) return res.sendStatus(404);
-        if (customerId) return res.send(queryCustomer.rows);
+        const newQueryCustomer = queryCustomer.rows.map( r => ({
+            id: r.id,
+            customerId: r.customerId,
+            gameId: r.gameId,
+            rentDate: dayjs(r.rentDate).format('YYYY-MM-DD'),
+            daysRented: r.daysRented,
+            returnDate: (r.returnDate !== null) ? dayjs(r.returnDate).format('YYYY-MM-DD') : null,
+            originalPrice: r.originalPrice,
+            delayFee: r.delayFee
+        }))
+        if (customerId) return res.send(newQueryCustomer);
         const queryGame = await db.query(`SELECT * FROM rentals WHERE "gameId" = $1`, [gameId]);
         if (gameId && queryGame.rows.length === 0) return res.sendStatus(404);
-        if (gameId) return res.send(queryGame.rows);
+        const newQueryGame = queryGame.rows.map( r => ({
+            id: r.id,
+            customerId: r.customerId,
+            gameId: r.gameId,
+            rentDate: dayjs(r.rentDate).format('YYYY-MM-DD'),
+            daysRented: r.daysRented,
+            returnDate: (r.returnDate !== null) ? dayjs(r.returnDate).format('YYYY-MM-DD') : null,
+            originalPrice: r.originalPrice,
+            delayFee: r.delayFee
+        }))
+        if (gameId) return res.send(newQueryGame);
 
         const rentals = await db.query(`
         SELECT rentals.*, 
